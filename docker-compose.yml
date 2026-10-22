@@ -3,15 +3,15 @@ services:
     image: postgres:15
     container_name: stock_postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-root}
-      POSTGRES_PASSWORD: ${DB_PASS:-1234}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-1234}
       POSTGRES_DB: ${DB_NAME:-stock_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-root} -d ${DB_NAME:-stock_db}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-stock_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,8 +26,8 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=${DB_NAME:-stock_db}
-      - DB_USER=${DB_USER:-root}
-      - DB_PASS=${DB_PASS:-1234}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-1234}
       - PERIOD=${PERIOD:-5d}
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
 
@@ -41,7 +41,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "127.0.0.1:8080:8080"
+      - "8080:8080"
     environment:
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
       - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=false
@@ -49,9 +49,10 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_NAME=${DB_NAME:-stock_db}
-      - DB_USER=${DB_USER:-root}
-      - DB_PASS=${DB_PASS:-1234}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-1234}
       - PERIOD=5d
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
+
 volumes:
   postgres_data:
