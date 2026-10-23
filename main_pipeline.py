@@ -48,9 +48,9 @@ def run_pipeline():
             if df.empty:
                 raise ValueError("all rows rejected by quality checks")
             save_raw_prices(conn, symbol, df)
-            print(f"✅ Ingested {symbol} ({len(df)} rows)")
+            print(f"Ingested {symbol} ({len(df)} rows)")
             success += 1
-        except Exception as e:  # หุ้นตัวเดียวพัง ต้องไม่ทำให้ตัวอื่นหยุดตาม
+        except Exception as e:
             print(f"⚠️ {symbol} failed: {e}")
             failed.append(symbol)
         time.sleep(1)
@@ -85,7 +85,7 @@ def cmd_ingest(symbol):
         if df.empty:
             raise ValueError("all rows rejected by quality checks")
         save_raw_prices(conn, symbol, df)
-        print(f"✅ Ingested {symbol} ({len(df)} rows, rejected={rejected})")
+        print(f" Ingested {symbol} ({len(df)} rows, rejected={rejected})")
     finally:
         conn.close()
 

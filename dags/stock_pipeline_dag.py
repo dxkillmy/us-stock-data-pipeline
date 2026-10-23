@@ -5,14 +5,14 @@ import pendulum
 from airflow.sdk import DAG
 from airflow.providers.standard.operators.bash import BashOperator
 
-RUN = "cd /opt/airflow/pipeline && python3 main_pipeline.py setup"
+RUN = "cd /opt/airflow/pipeline && python3 main_pipeline.py"
 
 with open("/opt/airflow/pipeline/data/stocks.csv", newline="", encoding="utf-8") as f:
     SYMBOLS = [r["ticker"] for r in csv.DictReader(f)]
 
 with DAG(
     dag_id="stock_pipeline",
-    schedule="0 17 * * 1-5",   # 17:00 New York (ตลาดปิด 16:00)
+    schedule="0 17 * * 1-5",
     start_date=pendulum.datetime(2026, 10, 1, tz="America/New_York"),
     catchup=False,
     default_args={"retries": 2, "retry_delay": timedelta(minutes=10)},

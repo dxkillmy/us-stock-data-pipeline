@@ -1,7 +1,6 @@
 import os
 import requests
 
-
 def send_discord_alert(message):
     url = os.getenv("DISCORD_WEBHOOK_URL")
     if not url:
