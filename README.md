@@ -45,7 +45,7 @@ The pipeline does not use a fixed time window. For each ticker it looks up the l
 
 ### Other design choices
 
-- **Reruns are safe.** The tables use `ON CONFLICT (ticker, trade_date) DO UPDATE`, so running twice never creates duplicate rows. I checked this by running the pipeline twice in a row and counting the rows, and by deleting the last few days and running it again.
+- **Reruns are safe.** The tables use `ON CONFLICT (ticker, trade_date) DO UPDATE`, so running twice never creates duplicate rows. There are tests for this in `tests/test_database.py` that load the same data twice and run the transform twice, then check the row count.
 - **Bad rows are dropped before loading.** Rows with a missing value, a price that is zero or negative, `high < low`, or a negative volume are rejected. The log prints how many were rejected for each ticker.
 - **Secrets stay out of the code.** The database login comes from `.env`, which is git-ignored.
 
@@ -70,7 +70,7 @@ cp .env.example .env
 
 docker compose up -d postgres
 docker compose run --rm pipeline
-docker exec -i stock_postgres psql -U root -d stock_db < analytics.sql
+docker exec -i stock_postgres psql -U postgres -d stock_db < analytics.sql
 
 docker compose up -d airflow
 ```
@@ -88,8 +88,15 @@ docker compose run --rm pipeline python3 main_pipeline.py setup
 docker compose run --rm pipeline python3 main_pipeline.py ingest AAPL
 docker compose run --rm pipeline python3 main_pipeline.py transform
 
-# run the tests
+# run the unit tests (the database tests are skipped, because DB_NAME is not test_db)
 docker compose run --rm pipeline python3 -m pytest tests/ -q
+
+# run all tests, including the database tests, on a separate test_db
+docker exec stock_postgres sh -c 'createdb -U "$POSTGRES_USER" test_db'
+docker compose run --rm -e DB_NAME=test_db pipeline python3 -m pytest tests/ -v
+````
+
+The database tests empty the tables after each test, so they only run when `DB_NAME` ends with `test_db`. This stops them from deleting the real data by mistake.
 ```
 
 The Airflow login is turned off, so only use it on your own machine. After changing the Python code, rebuild with `docker compose build`.
@@ -110,4 +117,4 @@ The Airflow login is turned off, so only use it on your own machine. After chang
 - Airflow runs in `standalone` mode, which is meant for learning and small setups. It only runs while Docker is running on the machine.
 - The transform step recalculates the whole fact table every run. It is fine for 25K rows, but it would need to be changed for much more data.
 - The Discord message only shows totals. To see which ticker failed, you have to look at the task in Airflow.
-- Tests cover the data quality checks only, not the database code or the DAG.
+- Tests cover the data quality checks and the database code (upserts, daily change %, last dates), but not the DAG itself.

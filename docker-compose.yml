@@ -28,7 +28,6 @@ services:
       - DB_NAME=${DB_NAME:-stock_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-1234}
-      - PERIOD=${PERIOD:-5d}
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
 
   airflow:
@@ -51,7 +50,6 @@ services:
       - DB_NAME=${DB_NAME:-stock_db}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-1234}
-      - PERIOD=5d
       - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL:-}
 
 volumes:

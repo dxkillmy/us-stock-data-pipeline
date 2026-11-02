@@ -7,6 +7,30 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    # A real PostgreSQL for the integration tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: test_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+
     steps:
       - uses: actions/checkout@v4
 
@@ -15,7 +39,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt pytest
+        run: pip install -r requirements.txt
 
       - name: Run tests
-        run: python -m pytest
+        run: python -m pytest -v
