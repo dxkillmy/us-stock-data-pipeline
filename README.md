@@ -94,10 +94,10 @@ docker compose run --rm pipeline python3 -m pytest tests/ -q
 # run all tests, including the database tests, on a separate test_db
 docker exec stock_postgres sh -c 'createdb -U "$POSTGRES_USER" test_db'
 docker compose run --rm -e DB_NAME=test_db pipeline python3 -m pytest tests/ -v
-````
+```
 
 The database tests empty the tables after each test, so they only run when `DB_NAME` ends with `test_db`. This stops them from deleting the real data by mistake.
-```
+
 
 The Airflow login is turned off, so only use it on your own machine. After changing the Python code, rebuild with `docker compose build`.
 
@@ -118,3 +118,5 @@ The Airflow login is turned off, so only use it on your own machine. After chang
 - The transform step recalculates the whole fact table every run. It is fine for 25K rows, but it would need to be changed for much more data.
 - The Discord message only shows totals. To see which ticker failed, you have to look at the task in Airflow.
 - Tests cover the data quality checks and the database code (upserts, daily change %, last dates), but not the DAG itself.
+- Stock splits are not handled. yfinance adjusts old prices when a stock splits, but the pipeline only downloads new days and never rewrites old rows. So after a split, old rows in the database keep the pre-split price while new rows have the post-split price, and `daily_change_pct` on that day would show a fake drop (around -90% for a 10-for-1 split). To fix it now, I would reload that ticker with `FULL_BACKFILL=1`. A better fix is to check `yf.Ticker(symbol).splits` on every run and reload a ticker automatically when it has a new split.
+- Prices are not adjusted for dividends (`auto_adjust=False`), so `daily_change_pct` is the price change only. On the ex-dividend date, the price drops a little, and that drop counts as a loss even though the investor got the dividend.
