@@ -1,5 +1,7 @@
 # US Stock Data Pipeline
 
+![CI](https://github.com/dxkillmy/us-stock-data-pipeline/actions/workflows/ci.yml/badge.svg)
+
 Every weekday after the US market closes, Airflow downloads daily prices for 20 US stocks from yfinance, checks the data, and loads it into PostgreSQL as a star schema. Everything runs in Docker Compose. I built it to practice the basics of data engineering: pulling data from an API, cleaning it, modeling it, scheduling it, and making sure reruns are safe.
 
 The database currently has about 25,000 rows (20 tickers, 5 years of daily prices).
@@ -96,8 +98,7 @@ docker exec stock_postgres sh -c 'createdb -U "$POSTGRES_USER" test_db'
 docker compose run --rm -e DB_NAME=test_db pipeline python3 -m pytest tests/ -v
 ```
 
-The database tests empty the tables after each test, so they only run when `DB_NAME` ends with `test_db`. This stops them from deleting the real data by mistake.
-
+There are 14 tests in total: 7 for the data quality checks and 7 for the database code. GitHub Actions runs all of them on every push, against a real PostgreSQL. The database tests empty the tables after each test, so they only run when `DB_NAME` ends with `test_db`. This stops them from deleting the real data by mistake.
 
 The Airflow login is turned off, so only use it on your own machine. After changing the Python code, rebuild with `docker compose build`.
 
