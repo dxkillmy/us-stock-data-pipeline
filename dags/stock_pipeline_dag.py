@@ -27,7 +27,7 @@ with DAG(
 
     transform = BashOperator(
         task_id="transform", bash_command=f"{RUN} transform",
-        trigger_rule="none_failed_min_one_success", append_env=True,
+        trigger_rule="all_done_min_one_success", append_env=True,
     )
 
     notify = BashOperator(
