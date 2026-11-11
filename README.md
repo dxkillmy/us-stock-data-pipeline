@@ -110,6 +110,7 @@ The Airflow login is turned off, so only use it on your own machine. After chang
 - `CREATE TABLE IF NOT EXISTS` does not change a table that already exists, so when I added a column (and later the foreign key to `dim_date`) I had to alter or recreate the tables. That is fine in development, not with real data.
 - My first version downloaded a fixed 5 days every run. It worked, but when I stopped the pipeline for about 10 days the data had a gap, so I switched to reading the latest date from the database.
 - yfinance returns today's candle while the market is still open, with `Close` and `Volume` empty. The quality check rejects it, so it never reaches the database.
+- I thought the transform step would still run when one ticker failed. I tested it by adding a fake ticker, and the transform was skipped (upstream_failed). The trigger rule none_failed_min_one_success needs zero failures. I changed it to all_done_min_one_success and tested again.
 
 ## Limitations
 
